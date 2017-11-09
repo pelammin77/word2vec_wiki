@@ -32,8 +32,12 @@ def remove_stops(data):
 
 
 tok = set(word_tokenize(raw_data))
+sentences = []
+for raw_sentence in raw_sents:
+    if len(raw_sentence) > 0:
+        sentences.append(make_sentences_to_word_list(raw_sentence))
 
-
+print(sentences)
 words = remove_stops(tok)
 #print( "word count:", len(words))
 #print(len(raw_sents))
@@ -70,9 +74,9 @@ text2vec = w2v.Word2Vec(
     sample=downsampling
 )
 
-text2vec.build_vocab(words)
+text2vec.build_vocab(sentences)
 #print(len(words))
-print(" lauseet:",raw_sents[:10])
+
 print("Corpus size", text2vec.corpus_count)
 print("Model iter size", text2vec.iter)
 
