@@ -1,86 +1,60 @@
 import logging
 import os
-from nltk import tokenize
-import multiprocessing
-from nltk.corpus import stopwords
+import codecs
+import glob
+import re
+import warnings
+import nltk
+warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
+from gensim.models import word2vec
+
+def sentence_to_wordlist(raw):
+    clean = re.sub("[^a-zA-Z]"," ", raw)
+    words = clean.split()
+    return words
 
 
-def remove_stops(data):
-    stop_words = set(stopwords.words("english"))
-    list_without_stops = []
-    for w in data:
-        if w not in stop_words:
-            list_without_stops.append(w)
-    return list_without_stops
+
+
+data_set_filenames = sorted(glob.glob("data/*.*"))
+print("books file names", data_set_filenames)
+data_raw = u""
+for data_filename in data_set_filenames:
+    print("Reading '{0}'...".format(data_filename))
+    with codecs.open(data_filename, "r", "utf-8") as data_file:
+        data_raw += data_file.read()
+    print("Book is now {0} characters long".format(len(data_raw)))
+    print()
+    data_raw = data_raw.lower()
+
+#configfiles = glob.glob(r'C:\Users\sam\Desktop\*\*.txt')
+
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+raw_sentences = tokenizer.tokenize(data_raw)
+
+print("data to sents")
+data_sentences = []
+for raw_sentence in raw_sentences:
+    if len(raw_sentence) > 0:
+        data_sentences.append(sentence_to_wordlist(raw_sentence))
+
+
 
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-raw_text = open('wiki.test.raw', encoding="utf8").read()
 
 
+nltk_corpus_word2vec_model = word2vec.Word2Vec(data_sentences, min_count=5, size=200, workers=4)
 
-words = [ ]
-tok = tokenize.word_tokenize(raw_text)
-tok = remove_stops(tok)
-words.append(tok)
-print(words)
-#print(toks[:50])
+#print(compine_sents)
 
-
-from gensim.models import word2vec as w2v
-#model = word2vec.Word2Vec(words, iter=10, min_count=1, size=300, workers=4)
-
-num_features = 300
-# Minimum word count threshold.
-min_word_count = 3
-
-# Number of threads to run in parallel.
-#more workers, faster we train
-num_workers =  multiprocessing.cpu_count()
-
-# Context window length.
-context_size = 7
-
-# Downsample setting for frequent words.
-#0 - 1e-5 is good for this
-downsampling = 1e-3
-
-# Seed for the RNG, to make the results reproducible.
-#random number generator
-#deterministic, good for debugging
-seed = 1
-
-text2vec = w2v.Word2Vec(
-    sg=1,
-    seed=seed,
-    workers=num_workers,
-    size=num_features,
-    min_count=min_word_count,
-    window=context_size,
-    sample=downsampling
-)
-
-text2vec.build_vocab(words)
-#print(len(words))
-
-print("Corpus size", text2vec.corpus_count)
-print("Model iter size", text2vec.iter)
+if not os.path.exists("trained_model"):
+    os.makedirs("trained_model")
 
 
-
-text2vec.train(words, total_examples=text2vec.corpus_count, epochs=text2vec.iter)
-
-
-
-
-# print(model['The quick brown fox jumped over the lazy dog'])
-print(text2vec.most_similar('actor'))
-##Saving the model
-if not os.path.exists("trained"):
-    os.makedirs("trained")
-text2vec.save(os.path.join("trained", "text2vec.w2v"))
-
-
+nltk_corpus_word2vec_model.save(os.path.join("trained_model", "corpus2vec.w2v"))
+print(nltk_corpus_word2vec_model.most_similar(["lord"], topn=20))
+#print(brown.fileids())
 
 
 
