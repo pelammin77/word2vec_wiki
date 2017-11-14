@@ -54,7 +54,7 @@ if not os.path.exists("trained_model"):
 
 nltk_corpus_word2vec_model.save(os.path.join("trained_model", "corpus2vec.w2v"))
 print(nltk_corpus_word2vec_model.most_similar(["lord"], topn=20))
-#print(brown.fileids())
+
 
 
 
