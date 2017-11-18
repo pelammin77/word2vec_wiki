@@ -6,4 +6,4 @@ print("Corpus size", text2vec.corpus_count)
 print("Model iter size", text2vec.iter)
 
 #print(text2vec.vocabulary)
-print( text2vec.most_similar("president"))
+print( text2vec.most_similar("how"))
